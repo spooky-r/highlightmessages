@@ -10,6 +10,7 @@ This module strips any colors inside of a message and uses the python 're' modul
 
 ##### Installing ZNC:
 ---
+- using znc version 1.7.0
 - follow the guides at: https://wiki.znc.in/Installation
 - when compiling, you must enable python: https://wiki.znc.in/Modpython#Compiling
 
