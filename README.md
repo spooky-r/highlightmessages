@@ -18,12 +18,12 @@ This module strips any colors inside of a message and uses the python 're' modul
 - put highlightmessages in ($HOME or $APPDATA$ or etc)/.znc/modules/highlightmessages.py
 - load the module in znc on the web control panel OR
 - load it in irc:
-  + '/query *status loadmod modpython'
-  + '/query *status loadmod highlightmessages'
-  + '/query *highlightmessages help' for options on configuring highlightmessages
+  + '/query &ast;status loadmod modpython'
+  + '/query &ast;status loadmod highlightmessages'
+  + '/query &ast;highlightmessages help' for options on configuring highlightmessages
 
 ##### Adding a nick to highlight:
 ---
-- '/query *highlightmessages addnick user.*' will highlight any nick matching "user.*" regex pattern (.* will match anything after user) with the default configured colors.
-- '/query *highlightmessages addnick user.* 1 12' will highlight with text color "1" and background color "12" specifically to "user.*".
+- '/query &ast;highlightmessages addnick user.&ast;' will highlight any nick matching "user.&ast;" regex pattern (.&ast; will match anything after user) with the default configured colors.
+- '/query &ast;highlightmessages addnick user.&ast; 1 12' will highlight with text color "1" and background color "12" specifically to "user.&ast;".
 
