@@ -1,6 +1,6 @@
 # highlightmessages.py
 
-highlightmessages.py is a ZNC module for highlighting nicks matching certain regex patterns with certain colors.
+highlightmessages.py is a ZNC module for highlighting nicks speaking in channels (not DM's) matching certain regex patterns with certain colors.
 
 For example, you may want to 'soft ignore' somebody by setting their text color to a similar shade as the text area color, their messages aren't gone but you can read them later and you know they are speaking (and people are responding to them).
 Or, possibly always know a certain person is speaking in a crowd of a hundred.
