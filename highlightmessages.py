@@ -84,15 +84,15 @@ class highlightmessages(znc.Module):
                # to prevent clients from assuming a number at the start of a message is actually a part of the color format, pad single digits with zeros.
                colorFormat = "\x03{0:02d},{1:02d}"
 
-               if not fg:
+               if fg is None:
                    fg = self.defaultFGColor
-               if not bg:
+               if bg is None:
                    bg = self.defaultBGColor
 
                highlightColor = colorFormat.format(bg, fg) if self.bgColorFirst else colorFormat.format(fg, bg)
 
                message.s = highlightColor + strippedMessage
-               break;
+               break
 
         return znc.CONTINUE
 
@@ -127,12 +127,12 @@ class highlightmessages(znc.Module):
 
         if bg:
             bgColor = self._ParseColorWithMessages(bg)
-            if not bgColor:
+            if bgColor is None:
                 self.PutModule(znc.COptionalTranslation("Invalid background color. (Did you put spaces in the regex? Don't do that.)").Resolve())
                 return
         if fg:
             fgColor = self._ParseColorWithMessages(fg)
-            if not fgColor:
+            if fgColor is None:
                 self.Putmodule(znc.COptionalTranslation("Invalid foreground color. (Did you put spaces in the regex? Don't do that.)").Resolve())
                 return
 
@@ -241,13 +241,13 @@ class highlightmessages(znc.Module):
         rows = []
 
         for nick, fg, bg in self.nicks:
-            rows.append([nick, "{:02d}".format(fg) if fg else znc.COptionalTranslation("Default").Resolve(), "{:02d}".format(bg) if bg else znc.COptionalTranslation("Default").Resolve()])
+            rows.append([nick, "{:02d}".format(fg) if fg is not None else znc.COptionalTranslation("Default").Resolve(), "{:02d}".format(bg) if bg is not None else znc.COptionalTranslation("Default").Resolve()])
 
         self._WritePrettyTables(headers, rows)
 
     def OnSetDefaultFGColor(self, line):
         color = self._ParseColorWithMessages(line)
-        if color:
+        if color is not None:
             self.defaultFGColor = color
             self.PutModule("DefaultFGColor = {0:02d}".format(self.defaultFGColor))
             self._WriteDefaultColorFile(color, self._GetDefaultFGFileLocation())
@@ -257,7 +257,7 @@ class highlightmessages(znc.Module):
 
     def OnSetDefaultBGColor(self, line):
         color = self._ParseColorWithMessages(line)
-        if color:
+        if color is not None:
             self.defaultBGColor = color
             self.PutModule("DefaultBGColor = {0:02d}".format(self.defaultBGColor))
             self._WriteDefaultColorFile(color, self._GetDefaultBGFileLocation())
