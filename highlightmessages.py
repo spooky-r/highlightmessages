@@ -4,7 +4,7 @@ import znc, re, os
 
 class highlightmessages(znc.Module):
     description = "Highlights channel messages from matching nicks with specified colors, stripping out any other colors."
-    module_types = [znc.CModInfo.UserModule]
+    module_types = [znc.CModInfo.UserModule, znc.CModInfo.NetworkModule]
     nick_limit = 100  # TODO configurable by znc admin?
 
     def __init__(self):
@@ -177,6 +177,8 @@ class highlightmessages(znc.Module):
             ret_color = color
             with open(path, "r") as conf:
                  ret_color = int(conf.readline())
+            if ret_color < -1 or ret_color > 99:
+                raise ValueError(znc.COptionalTranslation("Color value out of range. 0 - 99 are acceptible values").Resolve())
             return ret_color
         except (IOError, ValueError) as e:
             print(znc.COptionalTranslation("Failed to read file '{0}': {1}. Using default color '{2:02d}'.").Resolve().format(path, str(e), color))
@@ -210,9 +212,9 @@ class highlightmessages(znc.Module):
         try:
             with open(path, "w+") as conf:
                 for nick, fg, bg in self.nicks:
-                    if fg and bg:
+                    if fg is not None and bg is not None:
                         conf.write("{0} {1:02d} {2:02d}\n".format(nick, fg, bg))
-                    elif fg:
+                    elif fg is not None:
                         conf.write("{0} {1:02d}\n".format(nick, fg))
                     else:
                         conf.write("{0}\n".format(nick))
