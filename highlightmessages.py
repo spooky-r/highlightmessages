@@ -260,12 +260,12 @@ class highlightmessages(znc.Module):
                 strippedMessage = re.sub('\03[0-9][0-9]?(,[0-9][0-9]?)?', '', message.GetText())
 
                 # to prevent clients from assuming a number at the start of a message is actually a part of the color format, pad single digits with zeros.
-               colorFormat = "\x03{0:02d},{1:02d}"
+                colorFormat = "\x03{0:02d},{1:02d}"
 
                 if fg is None:
-                   fg = self.defaultFGColor
+                    fg = self.defaultFGColor
                 if bg is None:
-                   bg = self.defaultBGColor
+                    bg = self.defaultBGColor
 
                 highlightColor = colorFormat.format(bg, fg) if self.bgColorFirst else colorFormat.format(fg, bg)
 
