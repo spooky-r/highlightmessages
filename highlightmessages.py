@@ -17,7 +17,7 @@ class highlightmessages(znc.Module):
         elif value.lower() == "false":
             self._bgColorFirst = False
         else:
-            raise ValueError(znc.COptionalTranslation("Invalid value '{0}'.  Acceptible values: 'true', 'false'.").Resolve().format(value))
+            raise ValueError(znc.COptionalTranslation("Invalid value '{0}'. Acceptible values: 'true', 'false'.").Resolve().format(value))
 
     @property
     def defaultBGColor(self):
@@ -63,8 +63,8 @@ class highlightmessages(znc.Module):
 
     def OnLoad(self, args, message):
         # the code below is in spirit of znc's AddCommand methods for CModule.
-        # however, the functions fail on python lambdas.  regardless,
-        # the functionality has been duplicated.  see: "AddCommand" and "AddHelpCommand" 
+        # however, the functions fail on python lambdas. regardless,
+        # the functionality has been duplicated. see: "AddCommand" and "AddHelpCommand" 
         # below in this module.
         def AddNick(line):
             self.OnAddNick(line)
@@ -90,17 +90,17 @@ class highlightmessages(znc.Module):
             self.OnSetDefaultFGColor(line)
 
         self.AddHelpCommand()
-        self.AddCommand("AddNick", znc.COptionalTranslation("<regex> [fg color 0-99 [bg color 0-99]]"), znc.COptionalTranslation("Add a regex pattern to match nicks for highlighting with optional custom highlight colors for the nick.  If the nick exists, modify the nick's colors where unspecified colors revert to default.  Example: addnick user.* 1 0"), AddNick)
+        self.AddCommand("AddNick", znc.COptionalTranslation("<regex> [fg color 0-99 [bg color 0-99]]"), znc.COptionalTranslation("Add a regex pattern to match nicks for highlighting with optional custom highlight colors for the nick. If the nick exists, modify the nick's colors where unspecified colors revert to default. Example: addnick user.* 1 0"), AddNick)
         self.AddCommand("GetBGColorFirst", znc.COptionalTranslation(""), znc.COptionalTranslation("Print whether or not BG colors come first."), GetBGColorFirst)
         self.AddCommand("GetDefaultBGColor", znc.COptionalTranslation(""), znc.COptionalTranslation("Print the default BG color."), GetDefaultBGColor)
         self.AddCommand("GetDefaultFGColor", znc.COptionalTranslation(""), znc.COptionalTranslation("Print the default FG color."), GetDefaultFGColor)
         self.AddCommand("ListNicks", znc.COptionalTranslation(""), znc.COptionalTranslation("List configured nicks."), ListNicks)
-        self.AddCommand("LoadConfig", znc.COptionalTranslation(""), znc.COptionalTranslation("Load the configuration file for this module, if it exists.", LoadConfig)
+        self.AddCommand("LoadConfig", znc.COptionalTranslation(""), znc.COptionalTranslation("Load the configuration file for this module, if it exists."), LoadConfig)
         self.AddCommand("RemoveNick", znc.COptionalTranslation("<regex>"), znc.COptionalTranslation("Remove a nick with a matching regular expression. Example: removenick user.*"), RemoveNick)
         self.AddCommand("SaveConfig", znc.COptionalTranslation(""), znc.COptionalTranslation("Save the current configuration of this module to disk."), SaveConfig)
-        self.AddCommand("SetBGColorFirst", znc.COptionalTranslation("<true|false>"), znc.COptionalTranslation("Swaps BG and FG color positions for some clients that read background before foreground color.  If your client is using the foreground color as the background, set this to 'true'.  Default is 'false'.  Example: setbgcolorfirst true"), SetBGColorFirst)
-        self.AddCommand("SetDefaultBGColor", znc.COptionalTranslation("<0-99>"), znc.COptionalTranslation("Set default highlight background color from 0 - 15 (although up to 99 works on most(?) clients).  Example: setdefaultbgcolor 14"), SetDefaultBGColor)
-        self.AddCommand("SetDefaultFGColor", znc.COptionalTranslation("<0-99>"), znc.COptionalTranslation("Set default highlight color for text (foreground) from 0 - 15 (although up to 99 works on most(?) clients).  Example: setdefaultfgcolor 9"), SetDefaultFGColor)
+        self.AddCommand("SetBGColorFirst", znc.COptionalTranslation("<true|false>"), znc.COptionalTranslation("Swaps BG and FG color positions for some clients that read background before foreground color. If your client is using the foreground color as the background, set this to 'true'. Default is 'false'. Example: setbgcolorfirst true"), SetBGColorFirst)
+        self.AddCommand("SetDefaultBGColor", znc.COptionalTranslation("<0-99>"), znc.COptionalTranslation("Set default highlight background color from 0 - 15 (although up to 99 works on most(?) clients). Example: setdefaultbgcolor 14"), SetDefaultBGColor)
+        self.AddCommand("SetDefaultFGColor", znc.COptionalTranslation("<0-99>"), znc.COptionalTranslation("Set default highlight color for text (foreground) from 0 - 15 (although up to 99 works on most(?) clients). Example: setdefaultfgcolor 9"), SetDefaultFGColor)
 
         self.OnLoadConfig("")
 
@@ -216,13 +216,13 @@ class highlightmessages(znc.Module):
             elif line.lower() == 'false':
                 flag = False
             else:
-                raise ValueError(znc.COptionalTranslation("Unrecognized string value '{0}'.  'true' or 'false' case insensitive are the only two acceptible values.").Resolve().format(line))
+                raise ValueError(znc.COptionalTranslation("Unrecognized string value '{0}'. 'true' or 'false' case insensitive are the only two acceptible values.").Resolve().format(line))
 
             self.bgColorFirst = flag
             self.PutModule("SetBGColorFirst = {0}".format(flag))
             return
         except ValueError:
-            self.PutModule(znc.COptionalTranslation("Invalid argument.  Try 'True' or 'False'.").Resolve())
+            self.PutModule(znc.COptionalTranslation("Invalid argument. Try 'True' or 'False'.").Resolve())
             return
         
         print(znc.COptionalTranslation("Failed to set BGColorFirst. Please consult a debugger.").Resolve())
@@ -244,7 +244,7 @@ class highlightmessages(znc.Module):
     def _CheckColorValue(self, value):
         color = int(value)
         if value < 0 or value > 99:
-            raise ValueError(znc.COptionalTranslation("Value '{0}' is out of range.  Acceptible values are 0 - 99.").Resolve().format(value))
+            raise ValueError(znc.COptionalTranslation("Value '{0}' is out of range. Acceptible values are 0 - 99.").Resolve().format(value))
         return color
 
     def _GetConfigFileLocation(self):
