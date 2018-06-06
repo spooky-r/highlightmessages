@@ -229,16 +229,18 @@ class highlightmessages(znc.Module):
         return
 
     def OnSetDefaultBGColor(self, line):
-        try
+        try:
             self.defaultBGColor = line
             self.PutModule("DefaultBGColor = {0:02d}".format(self.defaultBGColor))
+        except ValueError as e:
+            self.PutModule(znc.COptionalTranslation("Failed to set DefaultBGColor: {0}").Resolve().format(str(e)))
 
     def OnSetDefaultFGColor(self, line):
-        try
+        try:
             self.defaultFGColor = line
             self.PutModule("DefaultFGColor = {0:02d}".format(self.defaultFGColor))
         except ValueError as e:
-            self.PutModule(znc.COptionalTranslation(
+            self.PutModule(znc.COptionalTranslation("Failed to set DefaultFGColor: {0}").Resolve().format(str(e)))
             
     ## ===== Utility methods =====
     def _CheckColorValue(self, value):
