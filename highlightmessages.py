@@ -5,6 +5,9 @@ class highlightmessages(znc.Module):
     description = "Highlights channel messages from matching nicks with specified colors, stripping out any other colors."
     module_types = [znc.CModInfo.UserModule, znc.CModInfo.NetworkModule]
     nick_limit = 100  # TODO configurable by znc admin?
+    defaultBGColorDefault = "05"
+    defaultFGColorDefault = "00"
+    bgColorFirstDefault = "false"
     
     @property
     def bgColorFirst(self):
@@ -12,9 +15,13 @@ class highlightmessages(znc.Module):
 
     @bgColorFirst.setter
     def bgColorFirst(self, value):
-        if value.lower() == "true":
+        if value is None:
+            raise ValueError(znc.COptionalTranslation("No value specified.").Resolve())
+
+        flag = str(value)
+        if flag.lower() == "true":
             self._bgColorFirst = True
-        elif value.lower() == "false":
+        elif flag.lower() == "false":
             self._bgColorFirst = False
         else:
             raise ValueError(znc.COptionalTranslation("Invalid value '{0}'. Acceptible values: 'true', 'false'.").Resolve().format(value))
@@ -36,8 +43,8 @@ class highlightmessages(znc.Module):
         self._defaultFGColor = self._CheckColorValue(value)
 
     def __init__(self):
-        self._defaultFGColor = 0
         self._defaultBGColor = 5
+        self._defaultFGColor = 0
         self._bgColorFirst = False
         self.nicks = []
         self.commands = []
@@ -109,12 +116,12 @@ class highlightmessages(znc.Module):
     def OnModCommand(self, line):
         # attempting to keep in the spirit of AddCommand, i had to write this
         # note to self: fix modpython so AddCommand works and this function unnecessary?
-        args = line.split(' ', 1)
+        args = line.split(None, 1)
         if not args:
             return True
 
         cmd = args[0]
-        line = args[1]
+        line = args[1] if len(args) > 1 else None
         for cmdName, args, description, function in self.commands:
             if cmdName.lower() == cmd.lower(): # no need for case sensitivity
                 function(line)
@@ -124,11 +131,11 @@ class highlightmessages(znc.Module):
 
     ## ====== Module commands =====
     def OnAddNick(self, line):
-        if len(self.nicks) >= self.nick_limit:
+        if len(self.nicks) >= highlightmessages.nick_limit:
             self.PutModule(znc.COptionalTranslation("Reached nick limit of {0}, cannot add any more.").Resolve().format(nick_limit))
             return
 
-        args = line.split(' ')
+        args = line.split(None)
         if not args or len(args) <= 0:
             self.PutModule(znc.COptionalTranslation("No args provided.").Resolve())
             return
@@ -145,14 +152,14 @@ class highlightmessages(znc.Module):
             try:
                 fgColor = self._CheckColorValue(args[1])
             except ValueError as e:
-                self.Putmodule(znc.COptionalTranslation("Invalid fg color '{0}'. {1}.").Resolve().format(args[1], str(e)))
+                self.PutModule(znc.COptionalTranslation("Invalid fg color '{0}'. {1}.").Resolve().format(args[1], str(e)))
                 return
 
         if len(args) > 2:
             try:
                 bgColor = self._CheckColorValue(args[2])
             except ValueError as e:
-                self.Putmodule(znc.COptionalTranslation("Invalid bg color '{0}'. {1}.").Resolve().format(args[2], str(e)))
+                self.PutModule(znc.COptionalTranslation("Invalid bg color '{0}'. {1}.").Resolve().format(args[2], str(e)))
                 return
 
         for i, (_nick, _fg, _bg) in enumerate(self.nicks):
@@ -193,7 +200,55 @@ class highlightmessages(znc.Module):
         self._WritePrettyTables(headers, rows)
 
     def OnLoadConfig(self, line):
-        pass
+        # save old values in case loading fails
+        oldNicks = self.nicks
+        oldBGColorFirst = self.bgColorFirst
+        oldDefaultBGColor = self.defaultBGColor
+        oldDefaultFGColor = self.defaultFGColor
+
+        try:
+            cFile = znc.CFile()
+            cFile.Open(self._GetConfigFilePath())
+
+            errorMessage = znc.String()
+            if not self.config.Parse(cFile, errorMessage):
+                raise IOError(errorMessage)
+
+            self.nicks = []
+            value1 = znc.String()
+            if self.config.FindStringEntry("bgColorFirst", value1, highlightmessages.bgColorFirstDefault):
+                self.bgColorFirst = value1
+                print (value1)
+
+            value2 = znc.String()
+            if self.config.FindStringEntry("defaultBGColor", value2, highlightmessages.defaultBGColorDefault):
+                self.defaultBGColor = value2
+                print (value2)
+            
+            value3 = znc.String()
+            if self.config.FindStringEntry("defaultFGColor", value3, highlightmessages.defaultFGColorDefault):
+                self.defaultFGColor = value3
+                print (value3)
+
+            # dirty hack since subconfig class doesn't exist
+            value4 = znc.String()
+            for i in range(highlightmessages.nick_limit):
+                if self.config.FindStringEntry("nick{0}".format(str(i)), value4):
+                    self.OnAddNick(str(value4))
+                    print (value4)
+
+            self.PutModule(znc.COptionalTranslation("Loaded.").Resolve())
+        except (ValueError, IOError) as e:
+            self.PutModule(znc.COptionalTranslation("Failed to read config file: {0}").Resolve().format(str(e)))
+            
+            # restore old values
+            self.nicks = oldNicks
+            self.bgColorFirst = oldBGColorFirst
+            self.defaultBGColor = oldDefaultBGColor
+            self.defaultFGColor = oldDefaultFGColor
+        finally:
+            if cFile.IsOpen():
+                cFile.Close() # if it fails?  i don't know
 
     def OnRemoveNick(self, line):
         for i, (nick, fg, bg) in enumerate(self.nicks):
@@ -206,27 +261,40 @@ class highlightmessages(znc.Module):
         return
 
     def OnSaveConfig(self, line):
-        pass
+        try:
+            self.config = znc.CConfig()
+
+            # make file if it isn't there
+            path = self._GetConfigFilePath()
+            cFile = znc.CFile()
+            cFile.Open(path, os.O_CREAT | os.O_WRONLY)
+
+            self.config.AddKeyValuePair("bgColorFirst", str(self.bgColorFirst))
+            self.config.AddKeyValuePair("defaultBGColor", str(self.defaultBGColor))
+            self.config.AddKeyValuePair("defaultFGColor", str(self.defaultFGColor))
+
+            for i, (nick, fg, bg) in enumerate(self.nicks):
+                line = nick + (" {:02d}".format(fg) if fg is not None else "") + (" {:02d}".format(bg) if bg is not None else "")
+                self.config.AddKeyValuePair("nick{0}".format(str(i)), line)
+                print (line)
+
+            self.config.Write(cFile)
+            cFile.Sync()
+
+            self.wrote = True
+            self.PutModule(znc.COptionalTranslation("Saved.").Resolve())
+        except IOError as e:
+            self.PutModule(znc.COptionalTranslation("Failed to write config file: {0}").Resolve().format(str(e)))
+        finally:
+            if cFile.IsOpen():
+                cFile.Close() # if it fails?  i don't know
 
     def OnSetBGColorFirst(self, line):
         try:
-            flag = None
-            if line.lower() == 'true':
-                flag = True
-            elif line.lower() == 'false':
-                flag = False
-            else:
-                raise ValueError(znc.COptionalTranslation("Unrecognized string value '{0}'. 'true' or 'false' case insensitive are the only two acceptible values.").Resolve().format(line))
-
-            self.bgColorFirst = flag
-            self.PutModule("SetBGColorFirst = {0}".format(flag))
-            return
-        except ValueError:
-            self.PutModule(znc.COptionalTranslation("Invalid argument. Try 'True' or 'False'.").Resolve())
-            return
-        
-        print(znc.COptionalTranslation("Failed to set BGColorFirst. Please consult a debugger.").Resolve())
-        return
+            self.bgColorFirst = line
+            self.PutModule("SetBGColorFirst = {0}".format(self.bgColorFirst))
+        except ValueError as e:
+            self.PutModule(znc.COptionalTranslation("Failed to set BGColorFirst: {0}").Resolve().format(str(e)))
 
     def OnSetDefaultBGColor(self, line):
         try:
@@ -244,12 +312,12 @@ class highlightmessages(znc.Module):
             
     ## ===== Utility methods =====
     def _CheckColorValue(self, value):
-        color = int(value)
-        if value < 0 or value > 99:
+        color = int(str(value))
+        if color < 0 or color > 99:
             raise ValueError(znc.COptionalTranslation("Value '{0}' is out of range. Acceptible values are 0 - 99.").Resolve().format(value))
         return color
 
-    def _GetConfigFileLocation(self):
+    def _GetConfigFilePath(self):
         return os.path.join(self.GetSavePath(), "highlightmessage.conf")
 
     def _ParseMessage(self, message):
@@ -269,7 +337,7 @@ class highlightmessages(znc.Module):
 
                 highlightColor = colorFormat.format(bg, fg) if self.bgColorFirst else colorFormat.format(fg, bg)
 
-                message.s = highlightColor + strippedMessage
+                message.SetText(highlightColor + strippedMessage)
                 break
            
 
