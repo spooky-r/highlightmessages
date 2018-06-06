@@ -16,7 +16,7 @@ class highlightmessages(znc.Module):
             self._bgColorFirst = True
         elif value.lower() == "false":
             self._bgColorFirst = False
-        else
+        else:
             raise ValueError(znc.COptionalTranslation("Invalid value '{0}'.  Acceptible values: 'true', 'false'.").Resolve().format(value))
 
     @property
