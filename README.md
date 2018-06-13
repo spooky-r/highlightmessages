@@ -11,6 +11,7 @@ This module strips any colors inside of a message and uses the python 're' modul
 ##### Installing ZNC:
 ---
 - using znc version 1.7.0
+  + if upgrading znc, the config should be upgraded automatically on znc startup (but keep a backup anyway)
 - follow the guides at: https://wiki.znc.in/Installation
 - when compiling, you must enable python: https://wiki.znc.in/Modpython#Compiling
 
@@ -22,6 +23,7 @@ This module strips any colors inside of a message and uses the python 're' modul
   + '/query &ast;status loadmod modpython'
   + '/query &ast;status loadmod highlightmessages'
   + '/query &ast;highlightmessages help' for options on configuring highlightmessages
+- don't forget to saveconfig to keep the module loaded next restart.
 
 ##### Adding a nick to highlight:
 ---
